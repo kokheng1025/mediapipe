@@ -55,12 +55,18 @@ DEFINE_string(output_video_path, "",
   MP_RETURN_IF_ERROR(graph.Initialize(config));
 
   LOG(INFO) << "Initialize the camera or load the video.";
+
+  const char* gst = "nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=1280, height=720, format=(string)NV12 ! "
+                     "nvvidconv ! video/x-raw, format=BGRx, width=640, height=480, framerate=(fraction)30/1 ! "
+                     "videoconvert ! video/x-raw, format=BGR ! "
+                     "appsink";
+
   cv::VideoCapture capture;
   const bool load_video = !FLAGS_input_video_path.empty();
   if (load_video) {
     capture.open(FLAGS_input_video_path);
   } else {
-    capture.open(0);
+    capture.open(gst, cv::CAP_GSTREAMER);
   }
   RET_CHECK(capture.isOpened());
 

@@ -65,12 +65,18 @@ DEFINE_string(output_video_path, "",
   gpu_helper.InitializeForTest(graph.GetGpuResources().get());
 
   LOG(INFO) << "Initialize the camera or load the video.";
+
+  const char* gst = "nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)30/1 ! "
+                    "nvvidconv ! video/x-raw, format=(string)BGRx ! "
+                     "videoconvert ! video/x-raw, format=(string)BGR ! "
+                     "appsink";
+
   cv::VideoCapture capture;
   const bool load_video = !FLAGS_input_video_path.empty();
   if (load_video) {
     capture.open(FLAGS_input_video_path);
   } else {
-    capture.open(0);
+    capture.open(gst, cv::CAP_GSTREAMER);
   }
   RET_CHECK(capture.isOpened());
 
@@ -79,9 +85,9 @@ DEFINE_string(output_video_path, "",
   if (!save_video) {
     cv::namedWindow(kWindowName, /*flags=WINDOW_AUTOSIZE*/ 1);
 #if (CV_MAJOR_VERSION >= 3) && (CV_MINOR_VERSION >= 2)
-    capture.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-    capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-    capture.set(cv::CAP_PROP_FPS, 30);
+    //capture.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+    //capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    //capture.set(cv::CAP_PROP_FPS, 30);
 #endif
   }
 
